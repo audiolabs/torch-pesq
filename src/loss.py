@@ -10,11 +10,11 @@ from torch.nn import Parameter
 from .bark import BarkScale
 from .loudness import Loudness
 
-class Pesq(torch.nn.Module):
+class PesqLoss(torch.nn.Module):
     factor: float
 
     def __init__(self, factor, sample_rate=48000, nbarks=49, win_length=512, n_fft=512, hop_length=256):
-        super(Pesq, self).__init__()
+        super(PesqLoss, self).__init__()
 
         self.factor = factor
         # resample to 16kHz
