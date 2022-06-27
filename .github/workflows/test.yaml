@@ -1,20 +1,27 @@
+name: PESQ score
+on: [push]
+
 jobs:
-  example-1:
-    name: Ex1 (${{ matrix.python-version }}, ${{ matrix.os }})
+  test:
+    name: Testing (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        os: ["ubuntu-latest"] #, "macos-latest", "windows-latest"]
         python-version: ["3.7"]
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
-      - name: Conda list
-        shell: pwsh
-        run: conda list
+
+      - name: Setup packages
+        run: |
+          $CONDA/bin/conda env update --file environment.yaml --name base
+          pip install -e .[tests,docs]
+
+      - name: Run python tests
+        run:
+          py.test
+

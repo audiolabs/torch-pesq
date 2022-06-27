@@ -4,6 +4,7 @@ from scipy import interpolate
 import numpy as np
 import math
 
+# fmt: off
 nr_of_hz_bands_per_bark_band_16k = [
     1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2,    
     1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4,    
@@ -69,29 +70,42 @@ pow_dens_correction_factor_16k = [
     59.176456,     65.521278,     61.399822,     58.144047,     57.004543,     
     64.126297,     54.311001,     61.114979,     55.077751,     56.849335,     
     55.628868,     53.137054,     54.985844,     79.546974]
+# fmt: on
 
 Sp_16k = 6.910853e-006
+
 
 def interp(values, nelms_new):
     nelms = len(values)
     interp = interpolate.interp1d(np.arange(nelms), values)
-    return torch.tensor(interp(np.linspace(0, 49., nelms_new, endpoint=False)))
+    return torch.tensor(interp(np.linspace(0, 49.0, nelms_new, endpoint=False)))
+
 
 class BarkScale(torch.nn.Module):
     def __init__(self, nfreqs=256, nbarks=49):
         super(BarkScale, self).__init__()
 
-        self.pow_dens_correction = Parameter(interp(pow_dens_correction_factor_16k, nbarks) * Sp_16k, requires_grad=False)
-        self.width_hz = Parameter(interp(width_of_band_hz_16k, nbarks), requires_grad=False)
-        self.width_bark = Parameter(interp(width_of_band_bark_16k, nbarks), requires_grad=False)
-        self.centre = Parameter(interp(centre_of_band_hz_16k, nbarks), requires_grad=False)
+        self.pow_dens_correction = Parameter(
+            interp(pow_dens_correction_factor_16k, nbarks) * Sp_16k, requires_grad=False
+        )
+        self.width_hz = Parameter(
+            interp(width_of_band_hz_16k, nbarks), requires_grad=False
+        )
+        self.width_bark = Parameter(
+            interp(width_of_band_bark_16k, nbarks), requires_grad=False
+        )
+        self.centre = Parameter(
+            interp(centre_of_band_hz_16k, nbarks), requires_grad=False
+        )
 
-        prev, bin_width = 0, 8000. / nfreqs
+        prev, bin_width = 0, 8000.0 / nfreqs
         fbank = torch.zeros(nbarks, nfreqs)
         for i in range(nbarks):
             stride = self.width_hz[i] / bin_width
             centre = self.centre[i] / bin_width
-            start, end = max(prev, int(math.floor(centre - stride / 2))), min(nfreqs, int(math.ceil(centre + stride / 2)))
+            start, end = max(prev, int(math.floor(centre - stride / 2))), min(
+                nfreqs, int(math.ceil(centre + stride / 2))
+            )
             fbank[i, start:end] = 1.0
             prev = end
 
@@ -99,9 +113,11 @@ class BarkScale(torch.nn.Module):
         self.total_width = self.width_bark.sum()
 
     def weighted_norm(self, tensor, p=2):
-        return self.total_width * (self.width_bark * tensor / self.total_width).norm(p,dim=2)
+        return self.total_width * (self.width_bark * tensor / self.total_width).norm(
+            p, dim=2
+        )
 
     def forward(self, tensor, return_mask=False):
         tensor = tensor.abs() ** 2
-        bark_powspec = torch.einsum('ij,klj->kli', self.fbank, tensor[:, :, 1:])
+        bark_powspec = torch.einsum("ij,klj->kli", self.fbank, tensor[:, :, 1:])
         return bark_powspec * self.pow_dens_correction

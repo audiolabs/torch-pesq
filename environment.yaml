@@ -1,9 +1,10 @@
-name: torch-pesq
+name: base
 channels:
   - conda-forge
   - defaults
+  - pytorch
 dependencies:
   - numpy
   - scipy
-  - torch
+  - pytorch
   - torchaudio
