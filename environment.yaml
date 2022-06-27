@@ -1,0 +1,9 @@
+name: torch-pesq
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - torch
+  - torchaudio
