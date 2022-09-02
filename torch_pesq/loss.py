@@ -52,30 +52,41 @@ class PesqLoss(torch.nn.Module):
         self.loudness = Loudness(nbarks)
 
         # design IIR bandpass filter for power degation between 325Hz to 3.25kHz
-        b, a = butter(4, [325, 3250], fs=16000, btype='band')
-        self.power_filter = Parameter(torch.tensor([a, b], dtype=torch.float32), requires_grad=False)
+        out = np.asarray(butter(4, [325, 3250], fs=16000, btype="band"))
+        self.power_filter = Parameter(
+            torch.as_tensor(out, dtype=torch.float32), requires_grad=False
+        )
 
         # use IIR filter for pre-emphasize
-        self.pre_filter = Parameter(torch.tensor([[2.740826, -5.4816519, 2.740826], [1.0, -1.9444777, 0.94597794]], dtype=torch.float64), requires_grad=False)
+        self.pre_filter = Parameter(
+            torch.tensor(
+                [[2.740826, -5.4816519, 2.740826], [1.0, -1.9444777, 0.94597794]],
+                dtype=torch.float32,
+            ),
+            requires_grad=False,
+        )
 
     def align_level(self, signal):
         """Align level to 10**7 and apply IIR gain + correction factor of STFT"""
 
-        filtered_signal = lfilter(signal, self.power_filter[0], self.power_filter[1], clamp=False)
-        power = (filtered_signal ** 2).sum() / (filtered_signal.shape[1] + 5120) / 1.04684
-        #print("{:.10}".format(power))
+        filtered_signal = lfilter(
+            signal, self.power_filter[1], self.power_filter[0], clamp=False
+        )
+        power = (
+            (filtered_signal**2).sum() / (filtered_signal.shape[1] + 5120) / 1.04684
+        )
         signal = signal * (10**7 / power).sqrt()
+
         return signal
 
-    def preemphasize(self, signal, filter=True):
-        emp = np.linspace(0,15,16)[1:] / 16.
+    def preemphasize(self, signal):
+        emp = torch.linspace(0, 15, 16, device=signal.device)[1:] / 16.0
         signal[:, :15] *= emp
-        signal[:, -15:] *= emp[::-1]
+        signal[:, -15:] *= torch.flip(emp, dims=(0,))
 
-        if filter:
-            signal = lfilter(signal.double(), self.pre_filter[1], self.pre_filter[0], clamp=False).float()
+        signal = lfilter(signal, self.pre_filter[1], self.pre_filter[0], clamp=False)
 
-        return signal 
+        return signal
 
     def raw(self, deg, ref):
         # both signals should have same length, we don't support alignment
@@ -83,35 +94,30 @@ class PesqLoss(torch.nn.Module):
 
         deg, ref = torch.atleast_2d(deg), torch.atleast_2d(ref)
 
+        # equalize to [-1, 1] range
+        max_val = torch.max(
+            torch.amax(deg.abs(), dim=1, keepdim=True),
+            torch.amax(ref.abs(), dim=1, keepdim=True),
+        )
+        deg, ref = deg / max_val, ref / max_val
+
         if hasattr(self, "resampler"):
             deg, ref = self.resampler(deg), self.resampler(ref)
 
-        #ref = self.align_level(ref)
-        #deg = self.align_level(deg)
-        ref = ref * 32320.01953125
-        deg = deg * 23455.2265625
-        #deg = deg * math.sqrt(10.0 ** 7 / 0.018176937475800514221)
+        ref, deg = self.align_level(ref), self.align_level(deg)
+        deg, ref = self.preemphasize(deg), self.preemphasize(ref)
 
-        #deg, ref = pad(deg, (4800, 4800)), pad(ref, (4800, 4800))
-        deg, ref = self.preemphasize(deg, filter=True), self.preemphasize(ref)
-
-        ## pad input
-        #nsamples = deg.shape[1]
-
-        #print(ref[0, 5000:5050])
-        ## degate power
-
-        #breakpoint()
-        # calculate spectrogram for ref and degated speech
+        # do weird alignments with reference implementation
         deg = torch.nn.functional.pad(deg, (0, deg.shape[1] % 256))
         ref = torch.nn.functional.pad(ref, (0, ref.shape[1] % 256))
         deg[:, 0:-1] = deg[:, 1:].clone()
-        deg, ref = self.to_spec(deg).swapaxes(1, 2), self.to_spec(ref).swapaxes(
-            1, 2
-        )
-        deg[:,:,0] = 0.0
-        ref[:,:,0] = 0.0
 
+        # calculate spectrogram for ref and degated speech
+        deg, ref = self.to_spec(deg).swapaxes(1, 2), self.to_spec(ref).swapaxes(1, 2)
+
+        # we won't use energy feature
+        deg[:, :, 0] = 0.0
+        ref[:, :, 0] = 0.0
 
         # calculate power spectrum in bark scale and hearing threshold
         deg, ref = self.fbank(deg), self.fbank(ref)
@@ -138,8 +144,6 @@ class PesqLoss(torch.nn.Module):
         frame_pow_ratio[:, 1:] = (
             frame_pow_ratio[:, 1:] * 0.8 + frame_pow_ratio[:, :-1] * 0.2
         )
-        #frame_pow_ratio[:, 0] += 0.2
-
 
         frame_pow_ratio = frame_pow_ratio.clamp(min=3e-4, max=5.0)
 
@@ -166,7 +170,9 @@ class PesqLoss(torch.nn.Module):
 
         # weighting
         h = ((self.loudness.total_audible(equ_ref, 1) + 1e5) / 1e7) ** 0.04
-        symm_distu, asymm_distu = (symm_distu / h).clamp(max=45.), (asymm_distu / h).clamp(max=45.)
+        symm_distu, asymm_distu = (symm_distu / h).clamp(max=45.0), (
+            asymm_distu / h
+        ).clamp(max=45.0)
 
         # calculate overlapping sums
         psqm = (
@@ -193,4 +199,6 @@ class PesqLoss(torch.nn.Module):
         return mos
 
     def forward(self, deg, ref):
-        return self.factor * (-self.mos(deg, ref) + 4.5)
+        d_symm, d_asymm = self.raw(deg, ref)
+
+        return self.factor * (0.1 * d_symm + 0.0309 * d_asymm)
