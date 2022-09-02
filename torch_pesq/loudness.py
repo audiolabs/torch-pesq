@@ -38,7 +38,8 @@ class Loudness(torch.nn.Module):
     def total_audible(self, tensor, factor: float = 1.0):
         mask = tensor > self.threshs * factor
 
-        return (tensor * mask).sum(dim=2)
+        tmp = (tensor * mask).sum(dim=2)
+        return tmp
 
     def time_avg_audible(self, tensor, silent):
         mask = tensor > self.threshs * 100.0
@@ -50,6 +51,6 @@ class Loudness(torch.nn.Module):
         loudness = (2.0 * self.threshs) ** self.exp * (
             (0.5 + 0.5 * pow_dens / self.threshs) ** self.exp - 1
         )
-        loudness[loudness <= self.threshs] = 0.0
+        loudness[pow_dens <= self.threshs] = 0.0
 
         return loudness * Sl_16k
