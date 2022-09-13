@@ -52,7 +52,7 @@ class PesqLoss(torch.nn.Module):
         self.loudness = Loudness(nbarks)
 
         # design IIR bandpass filter for power degation between 325Hz to 3.25kHz
-        out = np.asarray(butter(4, [325, 3250], fs=16000, btype="band"))
+        out = np.asarray(butter(3, [325, 3250], fs=16000, btype="band"))
         self.power_filter = Parameter(
             torch.as_tensor(out, dtype=torch.float32), requires_grad=False
         )
@@ -73,7 +73,7 @@ class PesqLoss(torch.nn.Module):
             signal, self.power_filter[1], self.power_filter[0], clamp=False
         )
         power = (
-            (filtered_signal**2).sum() / (filtered_signal.shape[1] + 5120) / 1.04684
+            (filtered_signal**2).sum(dim=1, keepdim=True) / (filtered_signal.shape[1] + 5120) / 1.04684
         )
         signal = signal * (10**7 / power).sqrt()
 
@@ -105,7 +105,7 @@ class PesqLoss(torch.nn.Module):
             deg, ref = self.resampler(deg), self.resampler(ref)
 
         ref, deg = self.align_level(ref), self.align_level(deg)
-        deg, ref = self.preemphasize(deg), self.preemphasize(ref)
+        ref, deg = self.preemphasize(ref), self.preemphasize(deg)
 
         # do weird alignments with reference implementation
         deg = torch.nn.functional.pad(deg, (0, deg.shape[1] % 256))
