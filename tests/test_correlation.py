@@ -23,6 +23,7 @@ def speech(request, device):
 def noise(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
+
 @pytest.fixture(params=["cuda"] if torch.cuda.is_available() else ["cpu"])
 def device(request):
     return request.param
@@ -39,6 +40,7 @@ def batched_pesq(ref, deg):
 
 
 corr = open("correlation.csv", "w")
+
 
 def test_simple(speech, noise, device):
     loss = PesqLoss(1.0, sample_rate=16000).to(device)

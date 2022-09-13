@@ -73,7 +73,9 @@ class PesqLoss(torch.nn.Module):
             signal, self.power_filter[1], self.power_filter[0], clamp=False
         )
         power = (
-            (filtered_signal**2).sum(dim=1, keepdim=True) / (filtered_signal.shape[1] + 5120) / 1.04684
+            (filtered_signal**2).sum(dim=1, keepdim=True)
+            / (filtered_signal.shape[1] + 5120)
+            / 1.04684
         )
         signal = signal * (10**7 / power).sqrt()
 
