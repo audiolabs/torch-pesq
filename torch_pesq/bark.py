@@ -129,6 +129,5 @@ class BarkScale(torch.nn.Module):
         )[:, :, 1:].norm(p, dim=2)
 
     def forward(self, tensor, return_mask=False):
-        print(tensor[:, 40, 1])
         bark_powspec = torch.einsum("ij,klj->kli", self.fbank, tensor[:, :, :-1])
         return bark_powspec * self.pow_dens_correction
