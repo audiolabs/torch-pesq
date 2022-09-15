@@ -2,13 +2,13 @@ import torch
 import math
 import numpy as np
 import warnings
-from torchaudio.functional.functional import _create_triangular_filterbank
-from torchaudio.functional import lfilter, DB_to_amplitude, filtfilt, biquad
-from torchaudio.transforms import Spectrogram, Resample, InverseSpectrogram
 import scipy
 from scipy.signal import butter
 from torch.nn.functional import unfold, pad
 from torch.nn import Parameter
+from torchaudio.functional.functional import _create_triangular_filterbank
+from torchaudio.functional import lfilter, DB_to_amplitude, filtfilt, biquad
+from torchaudio.transforms import Spectrogram, Resample, InverseSpectrogram
 
 from .bark import BarkScale
 from .loudness import Loudness
@@ -16,6 +16,38 @@ from .iir import prefilter_apply
 
 
 class PesqLoss(torch.nn.Module):
+    """ Perceptual Evaluation of Speech Quality
+
+    Implementation of the PESQ score in the PyTorch framework, closely following the ITU P.862
+    reference. There are two mayor difference: (1) no time alignment (2) energy normalization 
+    uses an IIR filter. 
+
+    Attributes
+    ----------
+    to_spec
+        Perform a Short-Time Fourier Transformation on the time signal returning the power spectral
+        density
+    fbank
+        Apply a Bark scaling to the power distribution
+    loudness
+        Estimate perceived loudness of the Bark scaled spectrogram
+    power_filter
+        IIR filter coefficients to calculate power in 325Hz to 3.25kHz band
+    pre_filter
+        Pre-empasize filter, applied to reference and degraded signal
+
+    Methods
+    -------
+    align_level
+        Align level of signal to 10**7 in band 325Hz to 3.25kHz
+    preemphasize
+        Pre-empasize a signal
+    mos
+        Calculate the Mean Opinion Score between 1.08 and 4.999
+    forward
+        Calculate the MOS score usable as loss; drops compression to valid range and flip sign
+    """
+    
     factor: float
 
     def __init__(
@@ -27,6 +59,22 @@ class PesqLoss(torch.nn.Module):
         n_fft=512,
         hop_length=256,
     ):
+        """
+        Parameters
+        ----------
+        factor : float
+            Scaling of the loss function
+        sample_rate : int
+            Sampling rate of the time signal, re-samples if different from 16kHz
+        nbarks : int
+            Number of bark bands
+        win_length : int
+            Window size used in the STFT 
+        n_fft : int
+            Number of frequency bins
+        hop_length : int
+            Distance between different frames
+        """
         super(PesqLoss, self).__init__()
 
         self.factor = factor
@@ -67,21 +115,49 @@ class PesqLoss(torch.nn.Module):
         )
 
     def align_level(self, signal):
-        """Align level to 10**7 and apply IIR gain + correction factor of STFT"""
+        """Align power to 10**7 
+
+        Parameters
+        ----------
+        signal : tensor
+            Input time signal
+
+        Returns
+        -------
+        Tensor containing the scaled time signal
+        """
 
         filtered_signal = lfilter(
             signal, self.power_filter[1], self.power_filter[0], clamp=False
         )
+
+        # calculate power with weird bugs in reference implementation
         power = (
             (filtered_signal**2).sum(dim=1, keepdim=True)
             / (filtered_signal.shape[1] + 5120)
             / 1.04684
         )
+
+        # align power
         signal = signal * (10**7 / power).sqrt()
 
         return signal
 
     def preemphasize(self, signal):
+        """ Pre-empasize a signal 
+
+        This pre-emphasize filter is also applied in the reference implementation. The filter
+        coefficients are taken from the reference.
+
+        Parameters
+        ----------
+        signal : tensor
+            Input time signal
+
+        Returns
+        -------
+        Tensor with the pre-emphasized signal
+        """
         emp = torch.linspace(0, 15, 16, device=signal.device)[1:] / 16.0
         signal[:, :15] *= emp
         signal[:, -15:] *= torch.flip(emp, dims=(0,))
@@ -91,6 +167,8 @@ class PesqLoss(torch.nn.Module):
         return signal
 
     def raw(self, deg, ref):
+        """ Calculate symmetric and asymmetric distances """
+
         # both signals should have same length, we don't support alignment
         assert deg.shape == ref.shape
 
@@ -190,6 +268,20 @@ class PesqLoss(torch.nn.Module):
         return d_symm, d_asymm
 
     def mos(self, ref, deg):
+        """ Calculate Mean Opinion Score
+
+        Parameters
+        ----------
+        ref : tensor
+            Reference signal
+        deg : tensor
+            Degraded signal
+
+        Returns
+        ----------
+        Mean Opinion Score in range (1.08, 4.999)
+        """
+
         d_symm, d_asymm = self.raw(deg, ref)
 
         # calculate MOS as combination of symmetric and asymmetric distance
@@ -201,6 +293,22 @@ class PesqLoss(torch.nn.Module):
         return mos
 
     def forward(self, deg, ref):
+        """ Calculate the a loss variant of the MOS score 
+
+        This function combines symmetric and asymmetric distances but does not apply a range 
+        compression and flip the sign in order to maximize the MOS.
+
+        Parameters
+        ----------
+        ref : tensor
+            Reference signal
+        deg : tensor
+            Degraded signal
+
+        Returns
+        ----------
+        Loss value in range [0, inf)
+        """
         d_symm, d_asymm = self.raw(deg, ref)
 
         return self.factor * (0.1 * d_symm + 0.0309 * d_asymm)

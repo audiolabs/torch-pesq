@@ -45,10 +45,10 @@ def test_abs_error(speech, noise, device):
     if noise.numel() > speech.numel():
         noise = noise[:, : speech.numel()]
 
-    steps = torch.linspace(0.00, 0.7, 50).unsqueeze(1).to(device)
+    steps = torch.linspace(0.00, 0.7, 40).unsqueeze(1).to(device)
     degraded = (1 - steps) * speech + steps * noise
 
-    vals = loss.mos(speech.expand(50, -1), degraded)
+    vals = loss.mos(speech.expand(40, -1), degraded)
     target = batched_pesq(speech, degraded)
 
     assert (vals - target).abs().max() < 0.17

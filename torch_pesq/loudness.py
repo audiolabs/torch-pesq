@@ -22,7 +22,32 @@ Sl_16k = 1.866055e-001
 
 
 class Loudness(torch.nn.Module):
+    """ Apply a loudness curve to the Bark spectrogram
+
+    Attributes
+    ----------
+    threshs : tensor
+        Hearing threshold per band; below a band is assumed to contain no significant energy
+    exp : tensor
+        Exponent of each band
+
+    Methods
+    -------
+    total_audible(self, tensor, factor)
+        Calculate total audible energy for each frame over all bands
+    time_avg_audible(self, tensor, silent)
+        Calculate arithmetic mean of audible energy for each band over all frames
+    forward(pow_dens)
+        Transform Bark scaled power spectrogram to audible energy per band
+    """
     def __init__(self, nbark=49):
+        """
+        Parameters
+        ----------
+        nbands : int
+            Number of bark bands
+        """
+            
         super(Loudness, self).__init__()
 
         self.threshs = Parameter(
@@ -36,18 +61,58 @@ class Loudness(torch.nn.Module):
         )
 
     def total_audible(self, tensor, factor: float = 1.0):
+        """ Calculate total audible energy for each frame over all bands
+
+        Parameters
+        ----------
+        tensor : tensor
+            A Bark scaled spectrogram with shape [batch_size, nframes, nbands]
+        factor : float
+            Scaling factor of the hearing threshold
+
+        Returns
+        -------
+        A tensor containing the hearable energy with shape [batch_size, nframes]
+        """
+
         mask = tensor > self.threshs * factor
 
         tmp = (tensor * mask).sum(dim=2)
         return tmp
 
     def time_avg_audible(self, tensor, silent):
+        """ Calculate arithmetic mean of audible energy for each band over all frames
+
+        Parameters
+        ----------
+        tensor : tensor
+            A Bark scaled spectrogram with shape [batch_size, nframes, nbands]
+        silent : tensor
+            Indicates whether a frame is silent or not
+
+        Returns
+        -------
+        A tensor containing the hearable energy with shape [batch_size, nbands]
+        """
+
         mask = tensor > self.threshs * 100.0
         mask = mask * (~silent.unsqueeze(2))
 
         return (tensor * mask).mean(dim=1)
 
     def forward(self, pow_dens):
+        """ Transform Bark scaled power spectrogram to audible energy per band
+
+        Parameters
+        ----------
+        pow_dens : tensor
+            A Bark scaled spectrogram with shape [batch_size, nframes, nbands]
+
+        Returns
+        -------
+        A tensor containing the hearable energy with shape [batch_size, nframes, nbands]
+        """
+
         loudness = (2.0 * self.threshs) ** self.exp * (
             (0.5 + 0.5 * pow_dens / self.threshs) ** self.exp - 1
         )

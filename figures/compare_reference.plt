@@ -1,5 +1,5 @@
-set term png size 1024,512
-set output "compare_reference.png"
+set term svg size 1024,512
+set output "compare_reference.svg"
 
 set multiplot layout 1, 3 ;
 

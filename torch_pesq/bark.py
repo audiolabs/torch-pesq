@@ -76,13 +76,63 @@ Sp_16k = 6.910853e-006
 
 
 def interp(values, nelms_new):
+    """ Interpolate values linearily
+
+    Parameters
+    ----------
+    values : list
+        The list of values to be interpolated
+    nelms_new : int
+        Number of values of returned list
+
+    Returns
+    -------
+    list
+        a list of interpolated values
+    """
+
     nelms = len(values)
     interp = interpolate.interp1d(np.arange(nelms), values)
     return torch.tensor(interp(np.linspace(0, 49.0, nelms_new, endpoint=False)))
 
 
 class BarkScale(torch.nn.Module):
+    """ Bark filterbank according to P.862 and additional interpolation
+
+    The ITU P.862 standard models perception with a Bark scaled filterbank. It uses rectangular
+    filters and a constant width until 4kHz. This implementation allows different number of
+    bark bands and uses interpolation to approximate the original parametrization.
+
+    Attributes
+    ----------
+    pow_dens_correction : list
+        Power density correction factors for each filter band
+    width_hz : list
+        Width of each filter in Hz
+    width_bark : list
+        Width of each filter in Bark
+    centre : list
+        Centre frequency of each band
+    fbank : tensor
+        Filterbank matrix converting power spectrum to band powers
+
+    Methods
+    -------
+    weighted_norm(tensor, p=2)
+        Calculates the p-norm taking band width into consideration
+    forward(tensor)
+        Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
+    """
+
     def __init__(self, nfreqs=256, nbarks=49):
+        """
+        Parameters
+        ----------
+        nfreqs
+            Number of frequency bins
+        nbarks
+            Number of Bark bands
+        """
         super(BarkScale, self).__init__()
 
         self.pow_dens_correction = Parameter(
@@ -101,6 +151,8 @@ class BarkScale(torch.nn.Module):
         fbank = torch.zeros(nbarks, nfreqs)
 
         if nfreqs == 256 and nbarks == 49:
+            # if default params are used, create filterbank matrix from given width
+
             current = 0
             # use filterbank width from reference for default band number
             for i in range(nbarks):
@@ -110,6 +162,7 @@ class BarkScale(torch.nn.Module):
                 current = end
         else:
             # otherwise generate one from number of barks and frequency bins
+
             prev, bin_width = 0, 8000.0 / nfreqs
             for i in range(nbarks):
                 stride = self.width_hz[i] / bin_width
@@ -124,10 +177,31 @@ class BarkScale(torch.nn.Module):
         self.total_width = self.width_bark[1:].sum()
 
     def weighted_norm(self, tensor, p=2):
+        """ Calculates the p-norm taking band width into consideration
+
+        Parameters
+        ----------
+        tensor
+            Power spectrogram with nfreqs frequency bins
+        p
+            Norm value
+        
+        Returns
+        -------
+        scaled norm value
+        """
         return self.total_width * (
             self.width_bark * tensor / self.total_width ** (1 / p)
         )[:, :, 1:].norm(p, dim=2)
 
-    def forward(self, tensor, return_mask=False):
+    def forward(self, tensor):
+        """ Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
+
+        Parameters
+        ----------
+        tensor
+            A Hz-scaled power spectrogram
+        """
+            
         bark_powspec = torch.einsum("ij,klj->kli", self.fbank, tensor[:, :, :-1])
         return bark_powspec * self.pow_dens_correction
