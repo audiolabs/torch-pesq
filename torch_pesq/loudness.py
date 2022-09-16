@@ -22,7 +22,7 @@ Sl_16k = 1.866055e-001
 
 
 class Loudness(torch.nn.Module):
-    """ Apply a loudness curve to the Bark spectrogram
+    """Apply a loudness curve to the Bark spectrogram
 
     Attributes
     ----------
@@ -40,6 +40,7 @@ class Loudness(torch.nn.Module):
     forward(pow_dens)
         Transform Bark scaled power spectrogram to audible energy per band
     """
+
     def __init__(self, nbark=49):
         """
         Parameters
@@ -47,7 +48,7 @@ class Loudness(torch.nn.Module):
         nbands : int
             Number of bark bands
         """
-            
+
         super(Loudness, self).__init__()
 
         self.threshs = Parameter(
@@ -61,7 +62,7 @@ class Loudness(torch.nn.Module):
         )
 
     def total_audible(self, tensor, factor: float = 1.0):
-        """ Calculate total audible energy for each frame over all bands
+        """Calculate total audible energy for each frame over all bands
 
         Parameters
         ----------
@@ -81,7 +82,7 @@ class Loudness(torch.nn.Module):
         return tmp
 
     def time_avg_audible(self, tensor, silent):
-        """ Calculate arithmetic mean of audible energy for each band over all frames
+        """Calculate arithmetic mean of audible energy for each band over all frames
 
         Parameters
         ----------
@@ -101,7 +102,7 @@ class Loudness(torch.nn.Module):
         return (tensor * mask).mean(dim=1)
 
     def forward(self, pow_dens):
-        """ Transform Bark scaled power spectrogram to audible energy per band
+        """Transform Bark scaled power spectrogram to audible energy per band
 
         Parameters
         ----------

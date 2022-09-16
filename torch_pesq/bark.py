@@ -76,7 +76,7 @@ Sp_16k = 6.910853e-006
 
 
 def interp(values, nelms_new):
-    """ Interpolate values linearily
+    """Interpolate values linearily
 
     Parameters
     ----------
@@ -97,7 +97,7 @@ def interp(values, nelms_new):
 
 
 class BarkScale(torch.nn.Module):
-    """ Bark filterbank according to P.862 and additional interpolation
+    """Bark filterbank according to P.862 and additional interpolation
 
     The ITU P.862 standard models perception with a Bark scaled filterbank. It uses rectangular
     filters and a constant width until 4kHz. This implementation allows different number of
@@ -177,7 +177,7 @@ class BarkScale(torch.nn.Module):
         self.total_width = self.width_bark[1:].sum()
 
     def weighted_norm(self, tensor, p=2):
-        """ Calculates the p-norm taking band width into consideration
+        """Calculates the p-norm taking band width into consideration
 
         Parameters
         ----------
@@ -185,7 +185,7 @@ class BarkScale(torch.nn.Module):
             Power spectrogram with nfreqs frequency bins
         p
             Norm value
-        
+
         Returns
         -------
         scaled norm value
@@ -195,13 +195,13 @@ class BarkScale(torch.nn.Module):
         )[:, :, 1:].norm(p, dim=2)
 
     def forward(self, tensor):
-        """ Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
+        """Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
 
         Parameters
         ----------
         tensor
             A Hz-scaled power spectrogram
         """
-            
+
         bark_powspec = torch.einsum("ij,klj->kli", self.fbank, tensor[:, :, :-1])
         return bark_powspec * self.pow_dens_correction

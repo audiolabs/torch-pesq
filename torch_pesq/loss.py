@@ -2,25 +2,23 @@ import torch
 import math
 import numpy as np
 import warnings
-import scipy
+
 from scipy.signal import butter
 from torch.nn.functional import unfold, pad
 from torch.nn import Parameter
-from torchaudio.functional.functional import _create_triangular_filterbank
-from torchaudio.functional import lfilter, DB_to_amplitude, filtfilt, biquad
-from torchaudio.transforms import Spectrogram, Resample, InverseSpectrogram
+from torchaudio.functional import lfilter
+from torchaudio.transforms import Spectrogram, Resample
 
 from .bark import BarkScale
 from .loudness import Loudness
-from .iir import prefilter_apply
 
 
 class PesqLoss(torch.nn.Module):
-    """ Perceptual Evaluation of Speech Quality
+    """Perceptual Evaluation of Speech Quality
 
     Implementation of the PESQ score in the PyTorch framework, closely following the ITU P.862
-    reference. There are two mayor difference: (1) no time alignment (2) energy normalization 
-    uses an IIR filter. 
+    reference. There are two mayor difference: (1) no time alignment (2) energy normalization
+    uses an IIR filter.
 
     Attributes
     ----------
@@ -47,7 +45,7 @@ class PesqLoss(torch.nn.Module):
     forward
         Calculate the MOS score usable as loss; drops compression to valid range and flip sign
     """
-    
+
     factor: float
 
     def __init__(
@@ -69,7 +67,7 @@ class PesqLoss(torch.nn.Module):
         nbarks : int
             Number of bark bands
         win_length : int
-            Window size used in the STFT 
+            Window size used in the STFT
         n_fft : int
             Number of frequency bins
         hop_length : int
@@ -115,7 +113,7 @@ class PesqLoss(torch.nn.Module):
         )
 
     def align_level(self, signal):
-        """Align power to 10**7 
+        """Align power to 10**7
 
         Parameters
         ----------
@@ -144,7 +142,7 @@ class PesqLoss(torch.nn.Module):
         return signal
 
     def preemphasize(self, signal):
-        """ Pre-empasize a signal 
+        """Pre-empasize a signal
 
         This pre-emphasize filter is also applied in the reference implementation. The filter
         coefficients are taken from the reference.
@@ -166,8 +164,8 @@ class PesqLoss(torch.nn.Module):
 
         return signal
 
-    def raw(self, deg, ref):
-        """ Calculate symmetric and asymmetric distances """
+    def raw(self, ref, deg):
+        """Calculate symmetric and asymmetric distances"""
 
         # both signals should have same length, we don't support alignment
         assert deg.shape == ref.shape
@@ -268,7 +266,7 @@ class PesqLoss(torch.nn.Module):
         return d_symm, d_asymm
 
     def mos(self, ref, deg):
-        """ Calculate Mean Opinion Score
+        """Calculate Mean Opinion Score
 
         Parameters
         ----------
@@ -282,20 +280,20 @@ class PesqLoss(torch.nn.Module):
         Mean Opinion Score in range (1.08, 4.999)
         """
 
-        d_symm, d_asymm = self.raw(deg, ref)
+        d_symm, d_asymm = self.raw(ref, deg)
 
         # calculate MOS as combination of symmetric and asymmetric distance
         mos = 4.5 - 0.1 * d_symm - 0.0309 * d_asymm
 
-        # apply compression curve to have MOS in (1, 5)
+        # apply compression curve to have MOS in proper range
         mos = 0.999 + 4 / (1 + torch.exp(-1.3669 * mos + 3.8224))
 
         return mos
 
-    def forward(self, deg, ref):
-        """ Calculate the a loss variant of the MOS score 
+    def forward(self, ref, deg):
+        """Calculate a loss variant of the MOS score
 
-        This function combines symmetric and asymmetric distances but does not apply a range 
+        This function combines symmetric and asymmetric distances but does not apply a range
         compression and flip the sign in order to maximize the MOS.
 
         Parameters
@@ -309,6 +307,6 @@ class PesqLoss(torch.nn.Module):
         ----------
         Loss value in range [0, inf)
         """
-        d_symm, d_asymm = self.raw(deg, ref)
+        d_symm, d_asymm = self.raw(ref, deg)
 
         return self.factor * (0.1 * d_symm + 0.0309 * d_asymm)

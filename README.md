@@ -8,11 +8,12 @@ Implementation of the widely used Perceptual Evaluation of Speech Quality (PESQ)
 import torch
 from torch_pesq import PesqLoss
 
-loss_fnc = PesqLoss(0.5,
+pesq = PesqLoss(0.5,
     sample_rate=44100, 
-    win_length=1024, hop_length=512,
-    nbarks=49,
 )
+
+mos = pesq.mos(reference, degraded)
+loss = pesq(reference, degraded)
 ```
 
 ## Comparison to reference implementation
