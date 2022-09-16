@@ -188,7 +188,7 @@ class PesqLoss(torch.nn.Module):
         # do weird alignments with reference implementation
         deg = torch.nn.functional.pad(deg, (0, deg.shape[1] % 256))
         ref = torch.nn.functional.pad(ref, (0, ref.shape[1] % 256))
-        deg[:, 0:-1] = deg[:, 1:].clone()
+        # deg[:, 0:-1] = deg[:, 1:].clone()
 
         # calculate spectrogram for ref and degated speech
         deg, ref = self.to_spec(deg).swapaxes(1, 2), self.to_spec(ref).swapaxes(1, 2)
