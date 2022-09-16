@@ -5,8 +5,6 @@ import pathlib
 import torchaudio
 from joblib import Parallel, delayed
 import scipy
-import sklearn
-from sklearn.linear_model import LinearRegression
 
 from torch_pesq import PesqLoss
 from pesq import pesq
@@ -24,7 +22,7 @@ def noise(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
 
-@pytest.fixture(params=["cuda"] if torch.cuda.is_available() else ["cpu"])
+@pytest.fixture(params=["cuda", "cpu"] if torch.cuda.is_available() else ["cpu"])
 def device(request):
     return request.param
 

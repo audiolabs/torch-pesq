@@ -5,7 +5,7 @@ with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="torch_pesq",
+    name="torch-pesq",
     version="0.1.0",
     description="PyTorch implementation of the Perceptual Evaluation of Speech Quality",
     author="Lorenz Schmidt",
@@ -25,6 +25,9 @@ setup(
         "tests": [
             "pytest",
             "black",
+            "wheel",
+            "pesq",
+            "joblib",
         ],
         "docs": [
             "sphinx",
