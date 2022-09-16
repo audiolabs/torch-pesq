@@ -1,6 +1,8 @@
 # Loss function inspired by the PESQ score
 
-![Test badge](https://github.com/audiolabs/torch-pesq/actions/workflows/test.yaml/badge.svg)
+![Testing badge](https://github.com/audiolabs/torch-pesq/actions/workflows/test.yaml/badge.svg) 
+![Linting badge](https://github.com/audiolabs/torch-pesq/actions/workflows/black.yaml/badge.svg) 
+![Docs badge](https://github.com/audiolabs/torch-pesq/actions/workflows/docs.yaml/badge.svg)
 
 Implementation of the widely used Perceptual Evaluation of Speech Quality (PESQ) score as a torch loss function. The PESQ loss alone performs not good for noise suppression, instead combine with scale invariant [SDR](https://arxiv.org/abs/1811.02508). For more information see [1],[2].
 

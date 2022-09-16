@@ -1,4 +1,4 @@
-name: Testing
+name: Docs
 on: [push]
 
 jobs:
@@ -18,9 +18,9 @@ jobs:
 
       - name: Setup packages
         run: |
-          pip install -e .[tests]
+          pip install -e .[docs]
 
-      - name: Run python tests
+      - name: Generate python docs
         run:
-          py.test
-
+          mkdir public
+          sphinx-build -b html docs/ public/
