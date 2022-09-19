@@ -47,7 +47,7 @@ Validation results for fullband noise suppression:
 
 The baseline system uses L1 time domain loss. Combining the PESQ loss function together with scale invariant [SDR](https://arxiv.org/abs/1811.02508) gives improvement of ~0.1MOS for PESQ and slight improvements in speech distortions, as well as a more stable training progression. Horizontal lines indicate the score of noisy speech.
 
-![Validation comparison](validation.svg)
+![Validation comparison](figures/validation.svg)
 
 ## Relevant references
 1. [End-to-End Multi-Task Denoising for joint SDR and PESQ Optimization](https://arxiv.org/abs/1901.09146)
