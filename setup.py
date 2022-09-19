@@ -14,7 +14,14 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
-    install_requires=["numpy", "torch", "scipy", "torchaudio"],
+    install_requires=[
+        "numpy",
+        "torch",
+        "scipy",
+        "torchaudio",
+        "torchtyping",
+        "typeguard",
+    ],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
