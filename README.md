@@ -32,7 +32,7 @@ loss.backward()
 
 ## Comparison to reference implementation
 
-The following figures uses samples from the VCTK speech and DEMAND noise dataset with varying mixing factors. They illustrate correlation and maximum error between the reference and torch implementation:
+The following figures uses samples from the VCTK [1] speech and DEMAND [2] noise dataset with varying mixing factors. They illustrate correlation and maximum error between the reference and torch implementation:
 
 ![Correlation](figures/compare_reference.png)
 
@@ -54,9 +54,12 @@ The baseline system uses L1 time domain loss. Combining the PESQ loss function t
 2. [A Deep Learning Loss Function Based on the Perceptual Evaluation of the Speech Quality](https://ieeexplore.ieee.org/document/8468124)
 3. [P.862 : Perceptual evaluation of speech quality (PESQ)](https://www.itu.int/rec/T-REC-P.862)
 4. [Perceptual evaluation of speech quality (PESQ)-a new method for speech quality assessment of telephone networks and codecs](https://ieeexplore.ieee.org/document/941023)
+5. [CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit](https://datashare.ed.ac.uk/handle/10283/2950)
+6. [The Diverse Environments Multi-channel Acoustic Noise Database (DEMAND): A database of multichannel environmental noise recordings](https://asa.scitation.org/doi/abs/10.1121/1.4799597)
 
 [1]: https://arxiv.org/abs/1901.09146
 [2]: https://ieeexplore.ieee.org/document/8468124
 [3]: https://www.itu.int/rec/T-REC-P.862
 [4]: https://ieeexplore.ieee.org/document/941023
-
+[5]: https://datashare.ed.ac.uk/handle/10283/2950
+[6]: https://asa.scitation.org/doi/abs/10.1121/1.4799597
