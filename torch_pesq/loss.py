@@ -11,6 +11,7 @@ from torchaudio.transforms import Spectrogram, Resample
 
 from typeguard import typechecked
 from torchtyping import TensorType
+from typing import Tuple
 
 from .bark import BarkScale
 from .loudness import Loudness
@@ -82,8 +83,7 @@ class PesqLoss(torch.nn.Module):
         self.source_sample_rate = sample_rate
 
         # resample to 16kHz
-        if sample_rate != 16000:
-            self.resampler = Resample(sample_rate, 16000)
+        self.resampler = Resample(sample_rate, 16000)
 
         # PESQ specifications state 32ms, 50% overlap, Hamming window
         self.to_spec = Spectrogram(
@@ -179,7 +179,7 @@ class PesqLoss(torch.nn.Module):
     @typechecked
     def raw(
         self, ref: TensorType["batch", "sample"], deg: TensorType["batch", "sample"]
-    ) -> (torch.tensor, torch.tensor):
+    ) -> Tuple[torch.tensor, torch.tensor]:
         """Calculate symmetric and asymmetric distances"""
         deg, ref = torch.atleast_2d(deg), torch.atleast_2d(ref)
 
@@ -190,9 +190,7 @@ class PesqLoss(torch.nn.Module):
         )
         deg, ref = deg / max_val, ref / max_val
 
-        # resample to 16kHz if required
-        if self.source_sample_rate != 16000:
-            deg, ref = self.resampler(deg), self.resampler(ref)
+        deg, ref = self.resampler(deg), self.resampler(ref)
 
         ref, deg = self.align_level(ref), self.align_level(deg)
         ref, deg = self.preemphasize(ref), self.preemphasize(deg)
