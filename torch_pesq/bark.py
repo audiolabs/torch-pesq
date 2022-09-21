@@ -78,7 +78,7 @@ pow_dens_correction_factor_16k = [
 Sp_16k = 6.910853e-006
 
 
-def interp(values: list, nelms_new: int) -> list:
+def interp(values: list, nelms_new: int) -> TensorType:
     """Apply linear interpolation to the list of values
 
     Parameters
@@ -90,7 +90,7 @@ def interp(values: list, nelms_new: int) -> list:
 
     Returns
     -------
-    list
+    TensorType
         a list of interpolated values
     """
 
@@ -124,7 +124,7 @@ class BarkScale(torch.nn.Module):
         Width of each filter in Bark
     centre : list
         Centre frequency of each band
-    fbank : tensor
+    fbank : TensorType["band", "bark"]
         Filterbank matrix converting power spectrum to band powers
     """
 
@@ -173,7 +173,9 @@ class BarkScale(torch.nn.Module):
         self.total_width = self.width_bark[1:].sum()
 
     @typechecked
-    def weighted_norm(self, tensor: TensorType["batch", "frame", "band"], p: float = 2):
+    def weighted_norm(
+        self, tensor: TensorType["batch", "frame", "band"], p: float = 2
+    ) -> TensorType["batch", "frame"]:
         """Calculates the p-norm taking band width into consideration
 
         Parameters
@@ -185,20 +187,28 @@ class BarkScale(torch.nn.Module):
 
         Returns
         -------
-        scaled norm value
+        TensorType["batch", "frame"]
+            scaled norm value
         """
         return self.total_width * (
             self.width_bark * tensor / self.total_width ** (1 / p)
         )[:, :, 1:].norm(p, dim=2)
 
     @typechecked
-    def forward(self, tensor: TensorType["batch", "frame", "band"]):
+    def forward(
+        self, tensor: TensorType["batch", "frame", "band"]
+    ) -> TensorType["batch", "frame", "bark"]:
         """Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
 
         Parameters
         ----------
         tensor : TensorType["batch", "frame", "band"]
             A Hz-scaled power spectrogram
+
+        Returns
+        -------
+        TensorType["batch", "frame", "bark"]
+            A Bark-scaled power spectrogram
         """
 
         bark_powspec = torch.einsum("ij,klj->kli", self.fbank, tensor[:, :, :-1])
