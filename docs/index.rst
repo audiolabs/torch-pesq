@@ -1,5 +1,5 @@
 torch-pesq
-======
+==========
 
 Loss function inspired by the PESQ score
 

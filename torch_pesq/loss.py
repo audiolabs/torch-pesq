@@ -21,8 +21,25 @@ class PesqLoss(torch.nn.Module):
     """Perceptual Evaluation of Speech Quality
 
     Implementation of the PESQ score in the PyTorch framework, closely following the ITU P.862
-    reference. There are two mayor difference: (1) no time alignment (2) energy normalization
-    uses an IIR filter.
+    reference. There are two mayor difference:
+
+      1. no time alignment
+      2. energy normalization uses an IIR filter
+
+    Parameters
+    ----------
+    factor : float
+        Scaling of the loss function
+    sample_rate : int
+        Sampling rate of the time signal, re-samples if different from 16kHz
+    nbarks : int
+        Number of bark bands
+    win_length : int
+        Window size used in the STFT
+    n_fft : int
+        Number of frequency bins
+    hop_length : int
+        Distance between different frames
 
     Attributes
     ----------
@@ -37,17 +54,6 @@ class PesqLoss(torch.nn.Module):
         IIR filter coefficients to calculate power in 325Hz to 3.25kHz band
     pre_filter : torch.tensor
         Pre-empasize filter, applied to reference and degraded signal
-
-    Methods
-    -------
-    align_level(self, tensor)
-        Align level of signal to 10**7 in band 325Hz to 3.25kHz
-    preemphasize(self, tensor)
-        Pre-empasize a signal
-    mos(self, tensor, tensor)
-        Calculate the Mean Opinion Score between 1.08 and 4.999
-    forward(self, tensor, tensor)
-        Calculate the MOS score usable as loss; drops compression to valid range and flip sign
     """
 
     factor: float
@@ -61,22 +67,6 @@ class PesqLoss(torch.nn.Module):
         n_fft: int = 512,
         hop_length: int = 256,
     ):
-        """
-        Parameters
-        ----------
-        factor : float
-            Scaling of the loss function
-        sample_rate : int
-            Sampling rate of the time signal, re-samples if different from 16kHz
-        nbarks : int
-            Number of bark bands
-        win_length : int
-            Window size used in the STFT
-        n_fft : int
-            Number of frequency bins
-        hop_length : int
-            Distance between different frames
-        """
         super(PesqLoss, self).__init__()
 
         self.factor = factor

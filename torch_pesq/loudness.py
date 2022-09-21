@@ -28,31 +28,20 @@ Sl_16k = 1.866055e-001
 class Loudness(torch.nn.Module):
     """Apply a loudness curve to the Bark spectrogram
 
+    Parameters
+    ----------
+    nbark : int
+        Number of bark bands
+
     Attributes
     ----------
     threshs : tensor
         Hearing threshold per band; below a band is assumed to contain no significant energy
     exp : tensor
         Exponent of each band
-
-    Methods
-    -------
-    total_audible(self, tensor, factor)
-        Calculate total audible energy for each frame over all bands
-    time_avg_audible(self, tensor, silent)
-        Calculate arithmetic mean of audible energy for each band over all frames
-    forward(pow_dens)
-        Transform Bark scaled power spectrogram to audible energy per band
     """
 
     def __init__(self, nbark: int = 49):
-        """
-        Parameters
-        ----------
-        nbands : int
-            Number of bark bands
-        """
-
         super(Loudness, self).__init__()
 
         self.threshs = Parameter(

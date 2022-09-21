@@ -107,6 +107,13 @@ class BarkScale(torch.nn.Module):
     implementation uses interpolation to approximate the original parametrization when
     the number of band is different from the reference implementation.
 
+    Parameters
+    ----------
+    nfreqs : int
+        Number of frequency bins
+    nbarks : int
+        Number of Bark bands
+
     Attributes
     ----------
     pow_dens_correction : list
@@ -119,24 +126,9 @@ class BarkScale(torch.nn.Module):
         Centre frequency of each band
     fbank : tensor
         Filterbank matrix converting power spectrum to band powers
-
-    Methods
-    -------
-    weighted_norm(tensor, p=2)
-        Calculates the p-norm taking band width into consideration
-    forward(tensor)
-        Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram
     """
 
     def __init__(self, nfreqs: int = 256, nbarks: int = 49):
-        """
-        Parameters
-        ----------
-        nfreqs : int
-            Number of frequency bins
-        nbarks : int
-            Number of Bark bands
-        """
         super(BarkScale, self).__init__()
 
         self.pow_dens_correction = Parameter(
