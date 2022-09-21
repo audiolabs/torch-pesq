@@ -39,13 +39,13 @@ class PesqLoss(torch.nn.Module):
 
     Methods
     -------
-    align_level
+    align_level(self, tensor)
         Align level of signal to 10**7 in band 325Hz to 3.25kHz
-    preemphasize
+    preemphasize(self, tensor)
         Pre-empasize a signal
-    mos
+    mos(self, tensor, tensor)
         Calculate the Mean Opinion Score between 1.08 and 4.999
-    forward
+    forward(self, tensor, tensor)
         Calculate the MOS score usable as loss; drops compression to valid range and flip sign
     """
 
@@ -79,6 +79,8 @@ class PesqLoss(torch.nn.Module):
         super(PesqLoss, self).__init__()
 
         self.factor = factor
+        self.source_sample_rate = sample_rate
+
         # resample to 16kHz
         if sample_rate != 16000:
             self.resampler = Resample(sample_rate, 16000)
@@ -123,7 +125,7 @@ class PesqLoss(torch.nn.Module):
 
         Parameters
         ----------
-        signal : tensor
+        signal : TensorType["batch", "sample"]
             Input time signal with size [batch, sample]
 
         Returns
@@ -158,7 +160,7 @@ class PesqLoss(torch.nn.Module):
 
         Parameters
         ----------
-        signal : tensor
+        signal : TensorType["batch", "sample"]
             Input time signal with size [batch, sample]
 
         Returns
@@ -188,7 +190,8 @@ class PesqLoss(torch.nn.Module):
         )
         deg, ref = deg / max_val, ref / max_val
 
-        if hasattr(self, "resampler"):
+        # resample to 16kHz if required
+        if self.source_sample_rate != 16000:
             deg, ref = self.resampler(deg), self.resampler(ref)
 
         ref, deg = self.align_level(ref), self.align_level(deg)
@@ -282,9 +285,9 @@ class PesqLoss(torch.nn.Module):
 
         Parameters
         ----------
-        ref : torch.tensor
+        ref : TensorType["batch", "sample"]
             Reference signal
-        deg : torch.tensor
+        deg : TensorType["batch", "sample"]
             Degraded signal
 
         Returns
@@ -313,9 +316,9 @@ class PesqLoss(torch.nn.Module):
 
         Parameters
         ----------
-        ref : torch.tensor
+        ref : TensorType["batch", "sample"]
             Reference signal
-        deg : torch.tensor
+        deg : TensorType["batch", "sample"]
             Degraded signal
 
         Returns
