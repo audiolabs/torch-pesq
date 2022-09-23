@@ -68,5 +68,5 @@ def test_correlation(speech, noise, device):
 
     val, p = scipy.stats.pearsonr(target.cpu(), vals.cpu())
 
-    assert val > 0.99
+    assert val > 0.97
     assert p < 0.05 / 2000.0
