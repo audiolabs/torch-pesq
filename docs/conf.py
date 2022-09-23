@@ -44,3 +44,7 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+autodoc_member_order = "bysource"
+autodoc_inherit_docstrings = False
+autodoc_typehints = "description"

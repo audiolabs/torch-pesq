@@ -31,7 +31,7 @@ setup(
     extras_require={
         "tests": [
             "pytest",
-            "black",
+            "pytest-black",
             "wheel",
             "pesq",
             "joblib",
@@ -39,6 +39,10 @@ setup(
         "docs": [
             "sphinx",
             "sphinx_rtd_theme",
+        ],
+        "all": [
+            "torch-pesq[tests]",
+            "torch-pesq[docs]",
         ],
     },
     packages=find_packages(),

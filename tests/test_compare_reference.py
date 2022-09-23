@@ -22,8 +22,10 @@ def noise(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
 
-@pytest.fixture(params=["cuda", "cpu"] if torch.cuda.is_available() else ["cpu"])
+@pytest.fixture(params=["cuda", pytest.param("cpu", marks=pytest.mark.slow)])
 def device(request):
+    if request.param == "cuda" and not torch.cuda.is_available():
+        pytest.skip("No GPU installed")
     return request.param
 
 
@@ -40,8 +42,8 @@ def batched_pesq(ref, deg):
 def test_abs_error(speech, noise, device):
     loss = PesqLoss(1.0, sample_rate=16000).to(device)
 
-    if noise.numel() > speech.numel():
-        noise = noise[:, : speech.numel()]
+    if noise.shape[1] > speech.shape[1]:
+        noise = noise[:, : speech.shape[1]]
 
     steps = torch.linspace(0.00, 0.7, 50).unsqueeze(1).to(device)
     degraded = (1 - steps) * speech + steps * noise
@@ -49,14 +51,14 @@ def test_abs_error(speech, noise, device):
     vals = loss.mos(speech.expand(50, -1), degraded)
     target = batched_pesq(speech, degraded)
 
-    assert (vals - target).abs().max() < 0.17
+    assert np.allclose(vals, target, atol=0.17)
 
 
 def test_correlation(speech, noise, device):
     loss = PesqLoss(1.0, sample_rate=16000).to(device)
 
-    if noise.numel() > speech.numel():
-        noise = noise[:, : speech.numel()]
+    if noise.shape[1] > speech.shape[1]:
+        noise = noise[:, : speech.shape[1]]
 
     steps = torch.linspace(0.00, 0.7, 50).unsqueeze(1).to(device)
     degraded = (1 - steps) * speech + steps * noise
@@ -65,15 +67,6 @@ def test_correlation(speech, noise, device):
     target = batched_pesq(speech, degraded)
 
     val, p = scipy.stats.pearsonr(target.cpu(), vals.cpu())
-    # corr.write("{},{}\n".format(val, p))
-    # corr.flush()
-
-    # import os
-
-    # name = os.environ.get("PYTEST_CURRENT_TEST").split(":")[-1].split(" ")[0]
-    # with open("out/" + name + ".txt", "w") as f:
-    #    for a, b in zip(target.cpu().numpy(), vals.cpu().numpy()):
-    #        f.write("{},{}\n".format(a, b))
 
     assert val > 0.99
     assert p < 0.05 / 2000.0

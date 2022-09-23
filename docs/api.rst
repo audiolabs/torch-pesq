@@ -1,8 +1,13 @@
-torch\_pesq package
-===================
+API Docs
+========
 
-Submodules
-----------
+torch\_pesq module
+------------------
+
+.. automodule:: torch_pesq
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 torch\_pesq.bark module
 -----------------------
@@ -24,14 +29,6 @@ torch\_pesq.loudness module
 ---------------------------
 
 .. automodule:: torch_pesq.loudness
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: torch_pesq
    :members:
    :undoc-members:
    :show-inheritance:
