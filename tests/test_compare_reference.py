@@ -58,19 +58,19 @@ def test_samples_present():
 
 def test_abs_error(speech, noise, device, speech_file, noise_file):
     if (speech_file.name, noise_file.name) in [
-        ('p231_025_mic2.wav', 'ch08-047.wav'),
-        ('p231_025_mic2.wav', 'ch03-029.wav'),
-        ('p231_025_mic2.wav', 'ch10-037.wav'),
-        ('p231_025_mic2.wav', 'ch01-029.wav'),
-        ('p231_025_mic2.wav', 'ch01-016.wav'),
-        ('p231_025_mic2.wav', 'ch02-006.wav'),
-        ('p231_025_mic2.wav', 'ch14-038.wav'),
-        ('p231_025_mic2.wav', 'ch05-027.wav'),
-        ('s5_097_mic2.wav', 'ch03-029.wav'),
-        ('s5_097_mic2.wav', 'ch01-016.wav'),
-        ('s5_097_mic2.wav', 'ch05-027.wav'),
+        ("p231_025_mic2.wav", "ch08-047.wav"),
+        ("p231_025_mic2.wav", "ch03-029.wav"),
+        ("p231_025_mic2.wav", "ch10-037.wav"),
+        ("p231_025_mic2.wav", "ch01-029.wav"),
+        ("p231_025_mic2.wav", "ch01-016.wav"),
+        ("p231_025_mic2.wav", "ch02-006.wav"),
+        ("p231_025_mic2.wav", "ch14-038.wav"),
+        ("p231_025_mic2.wav", "ch05-027.wav"),
+        ("s5_097_mic2.wav", "ch03-029.wav"),
+        ("s5_097_mic2.wav", "ch01-016.wav"),
+        ("s5_097_mic2.wav", "ch05-027.wav"),
     ]:
-        pytest.xfail('known failing item combination')
+        pytest.xfail("known failing item combination")
 
     loss = PesqLoss(1.0, sample_rate=16000).to(device)
 
