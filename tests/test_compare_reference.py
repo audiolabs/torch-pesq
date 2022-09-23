@@ -10,14 +10,16 @@ from torch_pesq import PesqLoss
 from pesq import pesq
 
 DATA_DIR = pathlib.Path(__file__).parent / "samples"
+SPEECH_FILES = list(DATA_DIR.glob("speech/*.wav"))
+NOISE_FILES = list(DATA_DIR.glob("noise/*/*.wav"))
 
 
-@pytest.fixture(params=DATA_DIR.glob("speech/*.wav"))
+@pytest.fixture(params=SPEECH_FILES)
 def speech(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
 
-@pytest.fixture(params=DATA_DIR.glob("noise/*/*.wav"))
+@pytest.fixture(params=NOISE_FILES)
 def noise(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
@@ -37,6 +39,11 @@ def batched_pesq(ref, deg):
     result.extend(Parallel(n_jobs=-1)(delayed(fnc)(ref.cpu(), x) for x in deg.cpu()))
 
     return torch.as_tensor(result).to(ref.device)
+
+
+def test_samples_present():
+    assert len(SPEECH_FILES) == 10
+    assert len(NOISE_FILES) == 14
 
 
 def test_abs_error(speech, noise, device):
