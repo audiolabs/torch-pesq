@@ -103,7 +103,7 @@ class PesqLoss(torch.nn.Module):
         self.loudness = Loudness(nbarks)
 
         # design IIR bandpass filter for power degation between 325Hz to 3.25kHz
-        out = np.asarray(butter(3, [325, 3250], fs=16000, btype="band"))
+        out = np.asarray(butter(5, [300, 3500], fs=16000, btype="band"))
         self.power_filter = Parameter(
             torch.as_tensor(out, dtype=torch.float32), requires_grad=False
         )
