@@ -1,3 +1,4 @@
+import random
 import torch
 import numpy as np
 import pytest
@@ -12,12 +13,17 @@ from pesq import pesq
 DATA_DIR = pathlib.Path(__file__).parent / "samples"
 
 
-@pytest.fixture(params=DATA_DIR.glob("speech/*.wav"))
+random.seed(42)
+np.random.seed(42)
+torch.torch.manual_seed(42)
+
+
+@pytest.fixture(params=DATA_DIR.glob("speech/*.flac"))
 def speech(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
 
-@pytest.fixture(params=DATA_DIR.glob("noise/*/*.wav"))
+@pytest.fixture(params=DATA_DIR.glob("noise/*.wav"))
 def noise(request, device):
     return torchaudio.load(request.param)[0].to(device)
 
@@ -51,7 +57,7 @@ def test_abs_error(speech, noise, device):
     vals = loss.mos(speech.expand(50, -1), degraded)
     target = batched_pesq(speech, degraded)
 
-    assert np.allclose(vals, target, atol=0.17)
+    assert np.allclose(vals.cpu(), target.cpu(), atol=0.17)
 
 
 def test_correlation(speech, noise, device):

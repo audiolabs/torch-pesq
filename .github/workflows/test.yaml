@@ -11,7 +11,19 @@ jobs:
         os: ["ubuntu-latest"] #, "macos-latest", "windows-latest"]
         python-version: ["3.7"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Cache samples
+        id: cache-samples
+        uses: actions/cache@v3
+        with:
+          path: tests/samples/
+          key: ${{ runner.os }}-samples
+
+      - name: Download and extract samples
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: cd tests/ && ./download_samples
+
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}

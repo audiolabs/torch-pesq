@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# bail out if any of the commands below fail
+set -e 
+
+mkdir -p samples/{noise,speech}
+
+if [[ ! -d "samples/demand" ]]; then
+	wget https://data.deepai.org/DemandDataset.zip
+	unzip DemandDataset.zip -d samples/
+fi;
+
+noise_samples=(
+	"OOFFICE/ch01.wav"
+	"DLIVING/ch02.wav"
+	"SPSQUARE/ch05.wav"
+	"NRIVER/ch06.wav"
+	"DWASHING/ch02.wav"
+	"OHALLWAY/ch03.wav"
+	"PCAFETER/ch01.wav"
+	"SCAFE/ch03.wav"
+	"PRESTO/ch06.wav"
+	"DKITCHEN/ch06.wav"
+	"NFIELD/ch10.wav"
+	"OMEETING/ch13.wav"
+	"PSTATION/ch14.wav"
+	"NPARK/ch08.wav"
+)
+
+for sample in ${noise_samples[@]}; do
+	cp "samples/demand/$sample" "samples/noise/${sample#*/}"
+done
+
+speech_samples=(
+	"p226_323_mic2"
+	"p247_262_mic2"
+	"p257_193_mic2"
+	"p284_060_mic2"
+	"p311_359_mic2"
+	"p231_025_mic2"
+	"p255_226_mic2"
+	"p269_323_mic2"
+	"p292_207_mic2"
+	"s5_097_mic2"
+)
+
+if [[ ! -d "samples/vctk" ]]; then
+	wget https://datashare.ed.ac.uk/download/DS_10283_3443.zip
+	unzip DS_10283_3443.zip -d samples/
+	unzip samples/VCTK-Corpus-0.92.zip -d samples/vctk/
+fi;
+
+for sample in ${speech_samples[@]}; do
+	cp "samples/vctk/wav48_silence_trimmed/${sample%_*_*}/$sample.flac" "samples/speech/"
+done
