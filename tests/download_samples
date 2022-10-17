@@ -28,19 +28,19 @@ noise_samples=(
 )
 
 for sample in ${noise_samples[@]}; do
-	cp "samples/demand/$sample" "samples/noise/${sample#*/}"
+	ffmpeg -y -ss 60 -i "samples/demand/$sample" -t 20 "samples/noise/${sample#*/}"
 done
 
 speech_samples=(
 	"p226_323_mic2"
+	"p232_025_mic2"
 	"p247_262_mic2"
-	"p257_193_mic2"
-	"p284_060_mic2"
-	"p311_359_mic2"
-	"p231_025_mic2"
 	"p255_226_mic2"
+	"p257_193_mic2"
 	"p269_323_mic2"
+	"p284_060_mic2"
 	"p292_207_mic2"
+	"p311_359_mic2"
 	"s5_097_mic2"
 )
 
