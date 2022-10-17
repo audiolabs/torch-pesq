@@ -18,7 +18,7 @@ jobs:
         id: cache-samples
         uses: actions/cache@v3
         with:
-          path: tests/samples/
+          path: tests/samples/{speech,noise}
           key: ${{ runner.os }}-samples
 
       - name: Download and extract samples
