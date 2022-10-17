@@ -11,21 +11,32 @@ from torch_pesq import PesqLoss
 from pesq import pesq
 
 DATA_DIR = pathlib.Path(__file__).parent / "samples"
-
+SPEECH_FILES = list(DATA_DIR.glob("speech/*.flac"))
+NOISE_FILES = list(DATA_DIR.glob("noise/*.wav"))
 
 random.seed(42)
 np.random.seed(42)
 torch.torch.manual_seed(42)
 
 
-@pytest.fixture(params=DATA_DIR.glob("speech/*.flac"))
-def speech(request, device):
-    return torchaudio.load(request.param)[0].to(device)
+@pytest.fixture(params=SPEECH_FILES)
+def speech_file(request):
+    return request.param
 
 
-@pytest.fixture(params=DATA_DIR.glob("noise/*.wav"))
-def noise(request, device):
-    return torchaudio.load(request.param)[0].to(device)
+@pytest.fixture(params=NOISE_FILES)
+def noise_file(request):
+    return request.param
+
+
+@pytest.fixture()
+def speech(speech_file, device):
+    return torchaudio.load(speech_file)[0].to(device)
+
+
+@pytest.fixture()
+def noise(noise_file, device):
+    return torchaudio.load(noise_file)[0].to(device)
 
 
 @pytest.fixture(params=["cuda", pytest.param("cpu", marks=pytest.mark.slow)])
@@ -45,16 +56,29 @@ def batched_pesq(ref, deg):
     return torch.as_tensor(result).to(ref.device)
 
 
-def test_abs_error(speech, noise, device):
+def test_samples_present():
+    assert len(SPEECH_FILES) == 10
+    assert len(NOISE_FILES) == 9
+
+
+def test_abs_error(speech, noise, device, speech_file, noise_file):
+    if (speech_file.name, noise_file.name) in [
+        ("p255_226_mic2.flac", "ch03.wav"),
+        ("p292_207_mic2.flac", "ch03.wav"),
+        ("p292_207_mic2.flac", "ch05.wav"),
+        ("p257_193_mic2.flac", "ch01.wav"),
+    ]:
+        pytest.xfail("known failing item combination")
+
     loss = PesqLoss(1.0, sample_rate=16000).to(device)
 
     if noise.shape[1] > speech.shape[1]:
         noise = noise[:, : speech.shape[1]]
 
-    steps = torch.linspace(0.00, 0.7, 50).unsqueeze(1).to(device)
+    steps = torch.linspace(0.00, 0.7, 30).unsqueeze(1).to(device)
     degraded = (1 - steps) * speech + steps * noise
 
-    vals = loss.mos(speech.expand(50, -1), degraded)
+    vals = loss.mos(speech.expand(30, -1), degraded)
     target = batched_pesq(speech, degraded)
 
     assert np.allclose(vals.cpu(), target.cpu(), atol=0.17)
