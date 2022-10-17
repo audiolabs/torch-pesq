@@ -6,7 +6,7 @@ set -e
 mkdir -p samples/{noise,speech}
 
 if [[ ! -d "samples/demand" ]]; then
-	wget https://data.deepai.org/DemandDataset.zip
+	wget -nv https://data.deepai.org/DemandDataset.zip
 	unzip DemandDataset.zip -d samples/
 fi;
 
@@ -45,7 +45,7 @@ speech_samples=(
 )
 
 if [[ ! -d "samples/vctk" ]]; then
-	wget https://datashare.ed.ac.uk/download/DS_10283_3443.zip
+	wget -nv https://datashare.ed.ac.uk/download/DS_10283_3443.zip
 	unzip DS_10283_3443.zip -d samples/
 	unzip samples/VCTK-Corpus-0.92.zip -d samples/vctk/
 fi;
