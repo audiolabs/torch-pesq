@@ -1,7 +1,8 @@
 torch-pesq
 ==========
 
-Loss function inspired by the PESQ score
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
 
 Contents:
 

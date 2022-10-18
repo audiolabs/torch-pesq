@@ -71,7 +71,65 @@
              
   <section id="torch-pesq">
 <h1>torch-pesq<a class="headerlink" href="#torch-pesq" title="Permalink to this heading">¶</a></h1>
-<p>Loss function inspired by the PESQ score</p>
+<section id="loss-function-inspired-by-the-pesq-score">
+<h2>Loss function inspired by the PESQ score<a class="headerlink" href="#loss-function-inspired-by-the-pesq-score" title="Permalink to this heading">¶</a></h2>
+<p><img alt="Testing badge" src="https://github.com/audiolabs/torch-pesq/actions/workflows/test.yaml/badge.svg" />
+<img alt="Linting badge" src="https://github.com/audiolabs/torch-pesq/actions/workflows/black.yaml/badge.svg" />
+<img alt="Docs badge" src="https://github.com/audiolabs/torch-pesq/actions/workflows/docs.yaml/badge.svg" /></p>
+<p>Implementation of the widely used Perceptual Evaluation of Speech Quality (PESQ) score as a torch loss function. The PESQ loss alone performs not good for noise suppression, instead combine with scale invariant <a class="reference external" href="https://arxiv.org/abs/1811.02508">SDR</a>. For more information see <a class="reference external" href="https://arxiv.org/abs/1901.09146">1</a>,<a class="reference external" href="https://ieeexplore.ieee.org/document/8468124">2</a>.</p>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h3>
+<p>To install the package just run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install torch-pesq
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch_pesq</span> <span class="kn">import</span> <span class="n">PesqLoss</span>
+
+<span class="n">pesq</span> <span class="o">=</span> <span class="n">PesqLoss</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="o">=</span><span class="mi">44100</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">mos</span> <span class="o">=</span> <span class="n">pesq</span><span class="o">.</span><span class="n">mos</span><span class="p">(</span><span class="n">reference</span><span class="p">,</span> <span class="n">degraded</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">pesq</span><span class="p">(</span><span class="n">reference</span><span class="p">,</span> <span class="n">degraded</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mos</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="comparison-to-reference-implementation">
+<h3>Comparison to reference implementation<a class="headerlink" href="#comparison-to-reference-implementation" title="Permalink to this heading">¶</a></h3>
+<p>The following figures uses samples from the VCTK <a class="reference external" href="https://arxiv.org/abs/1901.09146">1</a> speech and DEMAND <a class="reference external" href="https://ieeexplore.ieee.org/document/8468124">2</a> noise dataset with varying mixing factors. They illustrate correlation and maximum error between the reference and torch implementation:</p>
+<p><img alt="Correlation" src="_images/compare_reference.png" /></p>
+<p>The difference is a result from missing time alignment implementation and a level alignment done with IIR filtering instead of a frequency weighting. They are minor and should not be significant when used as a loss function. There are two outliers which may degrade results and further investigation is needed to find the source of difference.</p>
+</section>
+<section id="validation-improvements-when-used-as-loss-function">
+<h3>Validation improvements when used as loss function<a class="headerlink" href="#validation-improvements-when-used-as-loss-function" title="Permalink to this heading">¶</a></h3>
+<p>Validation results for fullband noise suppression:</p>
+<ul class="simple">
+<li><p>Noise estimator: Recurrent <a class="reference external" href="https://github.com/asappresearch/sru">SRU</a> with soft masking. 8 layers, width of 512 result in ~1586k parameters of the unpruned model.</p></li>
+<li><p>STFT for signal coding: 512 window length, 50% overlap, hamming window</p></li>
+<li><p>Mel filterbank with 32 Mel features</p></li>
+</ul>
+<p>The baseline system uses L1 time domain loss. Combining the PESQ loss function together with scale invariant <a class="reference external" href="https://arxiv.org/abs/1811.02508">SDR</a> gives improvement of ~0.1MOS for PESQ and slight improvements in speech distortions, as well as a more stable training progression. Horizontal lines indicate the score of noisy speech.</p>
+<p><img alt="Validation comparison" src="_images/validation.svg" /></p>
+</section>
+<section id="relevant-references">
+<h3>Relevant references<a class="headerlink" href="#relevant-references" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://arxiv.org/abs/1901.09146">End-to-End Multi-Task Denoising for joint SDR and PESQ Optimization</a></p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/8468124">A Deep Learning Loss Function Based on the Perceptual Evaluation of the Speech Quality</a></p></li>
+<li><p><a class="reference external" href="https://www.itu.int/rec/T-REC-P.862">P.862 : Perceptual evaluation of speech quality (PESQ)</a></p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/941023">Perceptual evaluation of speech quality (PESQ)-a new method for speech quality assessment of telephone networks and codecs</a></p></li>
+<li><p><a class="reference external" href="https://datashare.ed.ac.uk/handle/10283/2950">CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit</a></p></li>
+<li><p><a class="reference external" href="https://asa.scitation.org/doi/abs/10.1121/1.4799597">The Diverse Environments Multi-channel Acoustic Noise Database (DEMAND): A database of multichannel environmental noise recordings</a></p></li>
+</ol>
+</section>
+</section>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
