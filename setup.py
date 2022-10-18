@@ -39,6 +39,7 @@ setup(
         "docs": [
             "sphinx",
             "sphinx_rtd_theme",
+            "myst_parser",
         ],
         "all": [
             "torch-pesq[tests]",
