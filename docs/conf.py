@@ -8,7 +8,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "myst_parser"
+    "myst_parser",
 ]
 
 project = "torch-pesq"
