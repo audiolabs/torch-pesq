@@ -62,13 +62,13 @@ def test_samples_present():
 
 
 def test_abs_error(speech, noise, device, speech_file, noise_file):
-    if (speech_file.name, noise_file.name) in [
-        ("p247_262_mic2.flac", "ch10.wav"),
-        ("s5_097_mic2.flac", "ch13.wav"),
-        ("p257_193_mic2.flac", "ch08.wav"),
-        ("p257_193_mic2.flac", "ch13.wav"),
-    ]:
-        pytest.xfail("known failing item combination")
+    # if (speech_file.name, noise_file.name) in [
+    # ("p247_262_mic2.flac", "ch10.wav"),
+    # ("s5_097_mic2.flac", "ch13.wav"),
+    # ("p257_193_mic2.flac", "ch08.wav"),
+    # ("p257_193_mic2.flac", "ch13.wav"),
+    # ]:
+    # pytest.xfail("known failing item combination")
 
     loss = PesqLoss(1.0, sample_rate=16000).to(device)
 
