@@ -14,8 +14,6 @@ DATA_DIR = pathlib.Path(__file__).parent / "samples"
 SPEECH_FILES = list(DATA_DIR.glob("speech/*.flac"))
 NOISE_FILES = list(DATA_DIR.glob("noise/*.wav"))
 
-breakpoint()
-
 random.seed(42)
 np.random.seed(42)
 torch.torch.manual_seed(42)
