@@ -36,7 +36,7 @@ jobs:
         run: |
           pip install -e .[tests]
 
-          #- name: Run python tests
-          #run:
-          #py.test
+      - name: Run python tests
+        run:
+          py.test
 
