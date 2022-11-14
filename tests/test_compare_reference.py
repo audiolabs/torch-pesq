@@ -63,10 +63,10 @@ def test_samples_present():
 
 def test_abs_error(speech, noise, device, speech_file, noise_file):
     if (speech_file.name, noise_file.name) in [
-        ("p269_323_mic2.flac", "ch03.wav"),
-        ("p257_193_mic2.flac", "ch05.wav"),
-        ("p232_025_mic2.flac", "ch03.wav"),
-        ("p232_025_mic2.flac", "ch13.wav"),
+        ("p255_226_mic2.flac", "ch03.wav"),
+        ("p257_193_mic2.flac", "ch01.wav"),
+        ("p292_207_mic2.flac", "ch03.wav"),
+        ("p292_207_mic2.flac", "ch05.wav"),
     ]:
         pytest.xfail("known failing item combination")
 
