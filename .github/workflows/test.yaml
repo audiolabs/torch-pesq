@@ -1,5 +1,9 @@
 name: Testing
-on: [push]
+on:
+  push:
+    paths:
+      - torch_pesq/**
+      - tests/**
 
 jobs:
   test:

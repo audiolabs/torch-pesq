@@ -6,7 +6,7 @@ with open("README.md", encoding="utf-8") as fh:
 
 setup(
     name="torch-pesq",
-    version="0.1.0",
+    version="0.1.2",
     description="PyTorch implementation of the Perceptual Evaluation of Speech Quality",
     author="Lorenz Schmidt",
     author_email="lorenz.schmidt@audiolabs-erlangen.de",

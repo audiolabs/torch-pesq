@@ -34,7 +34,7 @@ loss.backward()
 
 The following figures uses samples from the VCTK [1] speech and DEMAND [2] noise dataset with varying mixing factors. They illustrate correlation and maximum error between the reference and torch implementation:
 
-![Correlation](figures/compare_reference.png)
+![Correlation](https://raw.githubusercontent.com/audiolabs/torch-pesq/main/figures/compare_reference.png)
 
 The difference is a result from missing time alignment implementation and a level alignment done with IIR filtering instead of a frequency weighting. They are minor and should not be significant when used as a loss function. There are two outliers which may degrade results and further investigation is needed to find the source of difference.
 
@@ -47,7 +47,7 @@ Validation results for fullband noise suppression:
 
 The baseline system uses L1 time domain loss. Combining the PESQ loss function together with scale invariant [SDR](https://arxiv.org/abs/1811.02508) gives improvement of ~0.1MOS for PESQ and slight improvements in speech distortions, as well as a more stable training progression. Horizontal lines indicate the score of noisy speech.
 
-![Validation comparison](figures/validation.svg)
+![Validation comparison](https://raw.githubusercontent.com/audiolabs/torch-pesq/main/figures/validation.svg)
 
 ## Relevant references
 1. [End-to-End Multi-Task Denoising for joint SDR and PESQ Optimization](https://arxiv.org/abs/1901.09146)
