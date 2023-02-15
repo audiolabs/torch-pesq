@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>torch-pesq &mdash; torch-pesq 0.1 documentation</title>
@@ -28,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> torch-pesq
+
+          
+          
+          <a href="#" class="icon icon-home">
+            torch-pesq
           </a>
               <div class="version">
                 0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -58,7 +62,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a></li>
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">torch-pesq</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
@@ -80,7 +84,7 @@
 <section id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h3>
 <p>To install the package just run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install torch-pesq
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>torch-pesq
 </pre></div>
 </div>
 </section>
@@ -104,7 +108,7 @@
 <section id="comparison-to-reference-implementation">
 <h3>Comparison to reference implementation<a class="headerlink" href="#comparison-to-reference-implementation" title="Permalink to this heading">¶</a></h3>
 <p>The following figures uses samples from the VCTK <a class="reference external" href="https://arxiv.org/abs/1901.09146">1</a> speech and DEMAND <a class="reference external" href="https://ieeexplore.ieee.org/document/8468124">2</a> noise dataset with varying mixing factors. They illustrate correlation and maximum error between the reference and torch implementation:</p>
-<p><img alt="Correlation" src="_images/compare_reference.png" /></p>
+<p><img alt="Correlation" src="https://raw.githubusercontent.com/audiolabs/torch-pesq/main/figures/compare_reference.png" /></p>
 <p>The difference is a result from missing time alignment implementation and a level alignment done with IIR filtering instead of a frequency weighting. They are minor and should not be significant when used as a loss function. There are two outliers which may degrade results and further investigation is needed to find the source of difference.</p>
 </section>
 <section id="validation-improvements-when-used-as-loss-function">
@@ -116,7 +120,7 @@
 <li><p>Mel filterbank with 32 Mel features</p></li>
 </ul>
 <p>The baseline system uses L1 time domain loss. Combining the PESQ loss function together with scale invariant <a class="reference external" href="https://arxiv.org/abs/1811.02508">SDR</a> gives improvement of ~0.1MOS for PESQ and slight improvements in speech distortions, as well as a more stable training progression. Horizontal lines indicate the score of noisy speech.</p>
-<p><img alt="Validation comparison" src="_images/validation.svg" /></p>
+<p><img alt="Validation comparison" src="https://raw.githubusercontent.com/audiolabs/torch-pesq/main/figures/validation.svg" /></p>
 </section>
 <section id="relevant-references">
 <h3>Relevant references<a class="headerlink" href="#relevant-references" title="Permalink to this heading">¶</a></h3>
