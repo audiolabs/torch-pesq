@@ -128,10 +128,11 @@ class BarkScale(torch.nn.Module):
         Filterbank matrix converting power spectrum to band powers
     device : torch.device
         The location to allocate for PyTorch tensors. (Default: cpu)
-
     """
 
-    def __init__(self, nfreqs: int = 256, nbarks: int = 49, device: torch.device = 'cpu'):
+    def __init__(
+        self, nfreqs: int = 256, nbarks: int = 49, device: torch.device = "cpu"
+    ):
         super(BarkScale, self).__init__()
 
         self.pow_dens_correction = Parameter(

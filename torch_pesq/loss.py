@@ -68,7 +68,7 @@ class PesqLoss(torch.nn.Module):
         win_length: int = 512,
         n_fft: int = 512,
         hop_length: int = 256,
-        device: torch.device = 'cpu'
+        device: torch.device = "cpu",
     ):
         super(PesqLoss, self).__init__()
 
@@ -98,14 +98,16 @@ class PesqLoss(torch.nn.Module):
         # design IIR bandpass filter for power degation between 325Hz to 3.25kHz
         out = np.asarray(butter(5, [325, 3250], fs=16000, btype="band"))
         self.power_filter = Parameter(
-            torch.as_tensor(out, dtype=torch.float32, device=device), requires_grad=False
+            torch.as_tensor(out, dtype=torch.float32, device=device),
+            requires_grad=False,
         )
 
         # use IIR filter for pre-emphasize
         self.pre_filter = Parameter(
             torch.tensor(
                 [[2.740826, -5.4816519, 2.740826], [1.0, -1.9444777, 0.94597794]],
-                dtype=torch.float32, device=device
+                dtype=torch.float32,
+                device=device,
             ),
             requires_grad=False,
         )

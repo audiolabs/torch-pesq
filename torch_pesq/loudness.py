@@ -43,7 +43,7 @@ class Loudness(torch.nn.Module):
         Exponent of each band
     """
 
-    def __init__(self, nbark: int = 49, device: torch.device = 'cpu'):
+    def __init__(self, nbark: int = 49, device: torch.device = "cpu"):
         super(Loudness, self).__init__()
 
         self.threshs = Parameter(
