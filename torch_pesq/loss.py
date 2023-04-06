@@ -54,6 +54,8 @@ class PesqLoss(torch.nn.Module):
         IIR filter coefficients to calculate power in 325Hz to 3.25kHz band
     pre_filter : TensorType
         Pre-empasize filter, applied to reference and degraded signal
+    device : torch.device
+        The location to allocate for PyTorch tensors. (Default: cpu)
     """
 
     factor: float
@@ -66,6 +68,7 @@ class PesqLoss(torch.nn.Module):
         win_length: int = 512,
         n_fft: int = 512,
         hop_length: int = 256,
+        device: torch.device = 'cpu'
     ):
         super(PesqLoss, self).__init__()
 
@@ -73,36 +76,36 @@ class PesqLoss(torch.nn.Module):
         self.source_sample_rate = sample_rate
 
         # resample to 16kHz
-        self.resampler = Resample(sample_rate, 16000)
+        self.resampler = Resample(sample_rate, 16000, device=device)
 
         # PESQ specifications state 32ms, 50% overlap, Hamming window
         self.to_spec = Spectrogram(
             win_length=win_length,
             n_fft=n_fft,
             hop_length=hop_length,
-            window_fn=torch.hann_window,
+            window_fn=lambda winsize: torch.hann_window(winsize, device=device),
             power=2,
             normalized=False,
             center=False,
         )
 
         # use a Bark filterbank to model perceived frequency resolution
-        self.fbank = BarkScale(n_fft // 2, nbarks)
+        self.fbank = BarkScale(n_fft // 2, nbarks, device=device)
 
         # set up loudness degation and calibration
-        self.loudness = Loudness(nbarks)
+        self.loudness = Loudness(nbarks, device=device)
 
         # design IIR bandpass filter for power degation between 325Hz to 3.25kHz
         out = np.asarray(butter(5, [325, 3250], fs=16000, btype="band"))
         self.power_filter = Parameter(
-            torch.as_tensor(out, dtype=torch.float32), requires_grad=False
+            torch.as_tensor(out, dtype=torch.float32, device=device), requires_grad=False
         )
 
         # use IIR filter for pre-emphasize
         self.pre_filter = Parameter(
             torch.tensor(
                 [[2.740826, -5.4816519, 2.740826], [1.0, -1.9444777, 0.94597794]],
-                dtype=torch.float32,
+                dtype=torch.float32, device=device
             ),
             requires_grad=False,
         )

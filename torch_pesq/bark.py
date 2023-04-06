@@ -126,25 +126,28 @@ class BarkScale(torch.nn.Module):
         Centre frequency of each band
     fbank : TensorType["band", "bark"]
         Filterbank matrix converting power spectrum to band powers
+    device : torch.device
+        The location to allocate for PyTorch tensors. (Default: cpu)
+
     """
 
-    def __init__(self, nfreqs: int = 256, nbarks: int = 49):
+    def __init__(self, nfreqs: int = 256, nbarks: int = 49, device: torch.device = 'cpu'):
         super(BarkScale, self).__init__()
 
         self.pow_dens_correction = Parameter(
             interp(pow_dens_correction_factor_16k, nbarks) * Sp_16k, requires_grad=False
-        )
+        ).to(device)
         self.width_hz = Parameter(
             interp(width_of_band_hz_16k, nbarks), requires_grad=False
-        )
+        ).to(device)
         self.width_bark = Parameter(
             interp(width_of_band_bark_16k, nbarks), requires_grad=False
-        )
+        ).to(device)
         self.centre = Parameter(
             interp(centre_of_band_hz_16k, nbarks), requires_grad=False
-        )
+        ).to(device)
 
-        fbank = torch.zeros(nbarks, nfreqs)
+        fbank = torch.zeros(nbarks, nfreqs, device=device)
 
         if nfreqs == 256 and nbarks == 49:
             # if default params are used, create filterbank matrix from given width
@@ -169,7 +172,7 @@ class BarkScale(torch.nn.Module):
                 fbank[i, start:end] = 1.0
                 prev = end
 
-        self.fbank = Parameter(fbank, requires_grad=False)
+        self.fbank = Parameter(fbank, requires_grad=False).to(device)
         self.total_width = self.width_bark[1:].sum()
 
     @typechecked

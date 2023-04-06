@@ -32,6 +32,8 @@ class Loudness(torch.nn.Module):
     ----------
     nbark : int
         Number of bark bands
+    device : torch.device
+        The location to allocate for PyTorch tensors. (Default: cpu)
 
     Attributes
     ----------
@@ -41,15 +43,15 @@ class Loudness(torch.nn.Module):
         Exponent of each band
     """
 
-    def __init__(self, nbark: int = 49):
+    def __init__(self, nbark: int = 49, device: torch.device = 'cpu'):
         super(Loudness, self).__init__()
 
         self.threshs = Parameter(
             interp(abs_thresh_power_16k, nbark).unsqueeze(0).unsqueeze(0),
             requires_grad=False,
-        )
+        ).to(device)
 
-        exp = 6 / (torch.tensor(centre_of_band_bark_16k) + 2.0)
+        exp = 6 / (torch.tensor(centre_of_band_bark_16k, device=device) + 2.0)
         self.exp = Parameter(
             exp.clamp(min=1.0, max=2.0) ** 0.15 * zwicker_power, requires_grad=False
         )
