@@ -97,6 +97,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#torch_pesq.bark.BarkScale.training"><code class="docutils literal notranslate"><span class="pre">BarkScale.training</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.bark.forward"><code class="docutils literal notranslate"><span class="pre">forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.bark.weighted_norm"><code class="docutils literal notranslate"><span class="pre">weighted_norm()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-torch_pesq.loss">torch_pesq.loss module</a><ul>
@@ -115,6 +117,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#torch_pesq.loss.PesqLoss.training"><code class="docutils literal notranslate"><span class="pre">PesqLoss.training</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loss.align_level"><code class="docutils literal notranslate"><span class="pre">align_level()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loss.forward"><code class="docutils literal notranslate"><span class="pre">forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loss.mos"><code class="docutils literal notranslate"><span class="pre">mos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loss.preemphasize"><code class="docutils literal notranslate"><span class="pre">preemphasize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loss.raw"><code class="docutils literal notranslate"><span class="pre">raw()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-torch_pesq.loudness">torch_pesq.loudness module</a><ul>
@@ -127,6 +134,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#torch_pesq.loudness.Loudness.training"><code class="docutils literal notranslate"><span class="pre">Loudness.training</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loudness.forward"><code class="docutils literal notranslate"><span class="pre">forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loudness.time_avg_audible"><code class="docutils literal notranslate"><span class="pre">time_avg_audible()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torch_pesq.loudness.total_audible"><code class="docutils literal notranslate"><span class="pre">total_audible()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -695,6 +705,43 @@ the number of band is different from the reference implementation.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.bark.forward">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.bark.</span></span><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.bark.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Hz-scaled spectrogram to a Bark-scaled spectrogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>, </em><em>&quot;band&quot;</em><em>]</em>) – A Hz-scaled power spectrogram</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Bark-scaled power spectrogram</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “frame”, “bark”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.bark.weighted_norm">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.bark.</span></span><span class="sig-name descname"><span class="pre">weighted_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.bark.weighted_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the p-norm taking band width into consideration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>, </em><em>&quot;band&quot;</em><em>]</em>) – Power spectrogram with nfreqs frequency bins</p></li>
+<li><p><strong>p</strong> (<em>float</em>) – Norm value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>scaled norm value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “frame”]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-torch_pesq.loss">
 <span id="torch-pesq-loss-module"></span><h2>torch_pesq.loss module<a class="headerlink" href="#module-torch_pesq.loss" title="Permalink to this heading">¶</a></h2>
@@ -886,6 +933,101 @@ compression and flip the sign in order to maximize the MOS.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loss.align_level">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loss.</span></span><span class="sig-name descname"><span class="pre">align_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loss.align_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Align power to 10**7 for band 325 to 3.25kHz</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signal</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Input time signal with size [batch, sample]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor containing the scaled time signal</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “sample”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loss.forward">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loss.</span></span><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a loss variant of the MOS score</p>
+<p>This function combines symmetric and asymmetric distances but does not apply a range
+compression and flip the sign in order to maximize the MOS.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ref</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Reference signal</p></li>
+<li><p><strong>deg</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Degraded signal</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loss value in range [0, inf)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “sample”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loss.mos">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loss.</span></span><span class="sig-name descname"><span class="pre">mos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loss.mos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Mean Opinion Score</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ref</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Reference signal</p></li>
+<li><p><strong>deg</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Degraded signal</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mean Opinion Score in range (1.08, 4.999)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “sample”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loss.preemphasize">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loss.</span></span><span class="sig-name descname"><span class="pre">preemphasize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loss.preemphasize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pre-empasize a signal</p>
+<p>This pre-emphasize filter is also applied in the reference implementation. The filter
+coefficients are taken from the reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signal</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;sample&quot;</em><em>]</em>) – Input time signal with size [batch, sample]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor containing the pre-emphasized signal</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “sample”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loss.raw">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loss.</span></span><span class="sig-name descname"><span class="pre">raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loss.raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate symmetric and asymmetric distances</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ref</strong> (<em>Tensor</em><em>[</em><em>Tensor</em><em>]</em>) – </p></li>
+<li><p><strong>deg</strong> (<em>Tensor</em><em>[</em><em>Tensor</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Tuple</em>[<em>Tensor</em>[<em>Tensor</em>], <em>Tensor</em>[<em>Tensor</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-torch_pesq.loudness">
 <span id="torch-pesq-loudness-module"></span><h2>torch_pesq.loudness module<a class="headerlink" href="#module-torch_pesq.loudness" title="Permalink to this heading">¶</a></h2>
@@ -983,6 +1125,63 @@ compression and flip the sign in order to maximize the MOS.</p>
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#torch_pesq.loudness.Loudness.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loudness.forward">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loudness.</span></span><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pow_dens</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loudness.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform Bark scaled power spectrogram to audible energy per band</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pow_dens</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>, </em><em>&quot;band&quot;</em><em>]</em>) – A Bark scaled spectrogram with shape [batch_size, nframes, nbands]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor containing the hearable energy with shape [batch_size, nframes, nbands]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “frame”, “band”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loudness.time_avg_audible">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loudness.</span></span><span class="sig-name descname"><span class="pre">time_avg_audible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loudness.time_avg_audible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate arithmetic mean of audible energy for each band over all frames</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>, </em><em>&quot;band&quot;</em><em>]</em>) – A Bark scaled spectrogram with shape [batch_size, nframes, nbands]</p></li>
+<li><p><strong>silent</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>]</em>) – Indicates whether a frame is silent or not</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor containing the hearable energy with shape [batch_size, nbands]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “band”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="torch_pesq.loudness.total_audible">
+<span class="sig-prename descclassname"><span class="pre">torch_pesq.loudness.</span></span><span class="sig-name descname"><span class="pre">total_audible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#torch_pesq.loudness.total_audible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total audible energy for each frame over all bands</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>TensorType</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;frame&quot;</em><em>, </em><em>&quot;band&quot;</em><em>]</em>) – A Bark scaled spectrogram with shape [batch_size, nframes, nbands]</p></li>
+<li><p><strong>factor</strong> (<em>float</em>) – Scaling factor of the hearing threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor containing the hearable energy with shape [batch_size, nframes]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TensorType[“batch”, “frame”]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
