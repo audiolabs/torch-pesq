@@ -20,7 +20,7 @@ setup(
         "scipy",
         "torchaudio",
         "torchtyping",
-        "typeguard",
+        "typeguard==2.13.3",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
